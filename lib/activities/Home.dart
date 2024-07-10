@@ -21,11 +21,21 @@ class Home extends StatelessWidget{
         child: Center(
           child: Container(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                MyButton(name: 'Scan QR Code', navi: Scanqr()),
+                Container(
+                  alignment: Alignment.center,
+                  height: 100,
+                  child:const Text('Welcome to QR-Scanner',
+                      style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold
+                      ))
+                ),
+                MyButton(name: 'Generate QR Code', navi: Generateqr()),
                 SizedBox(height: 20),
-                MyButton(name: 'Generate QR Code', navi: Generateqr())
+                MyButton(name: 'Scan QR Code', navi: Scanqr()),
               ]
             )
           )
