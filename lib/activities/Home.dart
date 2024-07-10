@@ -11,7 +11,7 @@ class Home extends StatelessWidget{
       appBar: AppBar(
         title: const Text('QR Scanner & Generator',
             style: TextStyle(
-                fontSize: 22,
+                fontSize: 23,
                 fontWeight: FontWeight.bold,
                 color: Colors.white)),
         backgroundColor: Colors.orange,

@@ -28,9 +28,9 @@ class _Scanqr extends State<Scanqr>{
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title:const Text('QR Scaner',
+        title:const Text('QR Scanner',
             style: TextStyle(
-                fontSize: 22,
+                fontSize: 23,
                 color: Colors.white,
                 fontWeight: FontWeight.bold
             )),
