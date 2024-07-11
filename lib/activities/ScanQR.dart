@@ -13,9 +13,16 @@ class _Scanqr extends State<Scanqr>{
   Future<void> scanQR()async{
     try{
       final qrRes = await FlutterBarcodeScanner.scanBarcode('#ff6666', "Cancel", true, ScanMode.QR);
-      setState((){
+      if(qrRes.toString() != '-1'){
+        setState((){
         _qrResult = qrRes.toString();
-      });
+        });
+      }else{
+        setState((){
+          _qrResult = 'Please try again!';
+        });
+      }
+
     }on PlatformException{
       setState(() {
         _qrResult = 'Failed to load data';
