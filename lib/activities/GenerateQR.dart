@@ -1,9 +1,15 @@
+// import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:qr_code/widgets/MyButton.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui' as ui;
 
 class Generateqr extends StatefulWidget{
   @override
@@ -11,9 +17,11 @@ class Generateqr extends StatefulWidget{
 }
 class _Generateqr extends State<Generateqr>{
   String _qrData = '';
+  Color _selColor = Colors.orange;
   Color color = Colors.orange;
   Color picBtn = Colors.white;
   TextEditingController _dataCont = TextEditingController();
+  GlobalKey _globalKey = GlobalKey();
 
   Widget PickerColor(){
       return ColorPicker(
@@ -21,7 +29,6 @@ class _Generateqr extends State<Generateqr>{
           onColorChanged: (picColor){
             setState((){
               color = picColor;
-              picBtn = picColor;
             });
           }
       );
@@ -37,7 +44,9 @@ class _Generateqr extends State<Generateqr>{
           TextButton(
             child:const Text('Select', style: TextStyle(fontSize: 22, color: Colors.orange)),
             onPressed: (){
-
+              setState((){
+                _selColor = color;
+              });
               Navigator.of(context).pop();
             }
           ),
@@ -50,6 +59,31 @@ class _Generateqr extends State<Generateqr>{
         ],
       )
     );
+  }
+
+  Future _saveQR()async{
+    try{
+      RenderRepaintBoundary boundary =
+      _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage();
+      ByteData? byteData =
+      await (image.toByteData(format: ui.ImageByteFormat.png));
+      if (byteData != null) {
+        final result =
+        await ImageGallerySaver.saveImage(byteData.buffer.asUint8List());
+        print(result);
+      }
+      Fluttertoast.showToast(
+        msg: 'QR Saved!',
+        backgroundColor: Colors.orange,
+        fontSize: 22,
+        toastLength: Toast.LENGTH_SHORT,
+        textColor: Colors.white,
+        gravity: ToastGravity.BOTTOM
+      );
+    }catch(err){
+      print('error in saving data $err');
+    }
   }
 
   @override
@@ -76,14 +110,6 @@ class _Generateqr extends State<Generateqr>{
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Container(
-                //   alignment: Alignment.center,
-                //   child: const Text('QR Generator', style: TextStyle(
-                //     fontSize: 35,
-                //     color: Colors.orange,
-                //     fontWeight: FontWeight.bold
-                //   ))
-                // ),
                 Container(
                   height: hei/2,
                   child: Column(
@@ -105,11 +131,14 @@ class _Generateqr extends State<Generateqr>{
                           )
                         ]
                     ),
-                    child: _qrData != '' ? QrImageView(
+                    child: _qrData != '' ?
+                    RepaintBoundary(
+                      key: _globalKey,
+                      child: QrImageView(
                       data: _qrData,
                       size: 200.0,
-                      foregroundColor: color,
-                    )
+                      foregroundColor: _selColor,
+                    ))
                         :const Text('Please enter some data!',
                       style: TextStyle(
                           fontSize: 22,
@@ -178,13 +207,13 @@ class _Generateqr extends State<Generateqr>{
                    child: ElevatedButton(
                      child: Text('Pick a Color', style: TextStyle(
                          fontSize: 22,
-                         color:picBtn != Colors.white ? Colors.white : Colors.orange
+                         color:_selColor != Colors.white ? Colors.white : Colors.orange
                      )),
                      style: ElevatedButton.styleFrom(
-                       backgroundColor: picBtn,
+                       backgroundColor: _selColor,
                        shape: RoundedRectangleBorder(
                          side: BorderSide(
-                           color: picBtn,
+                           color: _selColor,
                            width: 2
                          ),
                          borderRadius: BorderRadius.circular(10)
@@ -197,22 +226,50 @@ class _Generateqr extends State<Generateqr>{
                  ),
                  //input button
                 Container(
-                  width: 300,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      )
-                    ),
-                    onPressed: (){
-                      setState((){
-                        _qrData = _dataCont.text.toString();
-                      });
-                      _dataCont.clear();
-                      FocusScope.of(context).unfocus();
-                    },
-                    child: Text('Generate', style: TextStyle(fontSize: 22, color: Colors.white))
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      Container(
+                          margin: EdgeInsets.only(right: 10),
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(
+                                      color: Colors.orange,
+                                    )
+                                ),
+                              ),
+                              child: Text('Save', style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.orange,
+                              )),
+                              onPressed:(){
+                                _saveQR();
+                              }
+                          )
+                      ),
+                      Container(
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  )
+                              ),
+                              onPressed: (){
+                                setState((){
+                                  _qrData = _dataCont.text.toString();
+                                });
+                                _dataCont.clear();
+                                FocusScope.of(context).unfocus();
+                              },
+                              child: Text('Generate', style: TextStyle(fontSize: 22, color: Colors.white))
+                          )
+                      ),
+
+                    ]
                   )
                 ),
                     ]
@@ -226,3 +283,5 @@ class _Generateqr extends State<Generateqr>{
     );
   }
 }
+
+
